@@ -1,6 +1,6 @@
 import './App.css';
 import "bootstrap/dist/css/bootstrap.min.css";
-import React from 'react';
+import React,{useState} from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -11,34 +11,31 @@ import Button from 'react-bootstrap/Button';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
 
-class App extends React.Component{
-  constructor(props) {
-    super(props);
-    this.state = {
-      show: false
-    };
-  }
 
-  daysInMonth (month, year) {
+  let breaks = [];
+
+  function daysInMonth(month, year) {
     return new Date(year, month, 0).getDate();
   }
-  Years() {
+  function Years() {
     let years = [];
     let months = [];
     let date =  new Date().getFullYear();
 
-    for(let i = 0; i < 20; i++){
+    for(let i = 0; i < 10; i++){
       years.push(              
         <Nav.Item>
           <Nav.Link eventKey={date + i}>{date + i}</Nav.Link>
         </Nav.Item>
       );
     }
-    for(let i = 0; i < 20; i++){
+    for(let i = 0; i < 10; i++){
       months.push(        
         <Tab.Pane eventKey={date + i}>
-          {this.Months(date + i)}
+          {Months(date + i)}
         </Tab.Pane>     
       );
     }
@@ -59,13 +56,13 @@ class App extends React.Component{
       </Tab.Container>
     );
   }
-  Months(year) {
+  function Months(year) {
     let months = [["Jan", "January"], ["Feb", "Febuary"], ["Mar", "March"], ["Apr", "April"], ["May", "May"], ["Jun", "June"], ["Jul", "July"], ["Aug", "August"], ["Sep", "September"], ["Oct", "October"], ["Nov", "November"], ["Dec", "December"]];
     let code = [];
     for(let i = 0; i < 12; i++){
       code.push(
         <Tab eventKey= {months[i][0]} title={months[i][0]}>
-          {this.days(this.daysInMonth( i+1 , year), months[i][1], year)}
+          {days(daysInMonth( i+1 , year), months[i][1], year)}
         </Tab>
       );
     }
@@ -82,7 +79,7 @@ class App extends React.Component{
     );
   }
 
-  days = (numOfDays, monthName, year) => {
+  function days(numOfDays, monthName, year){
     let code = [];
     let tempCode = [];
     let weekday = "";
@@ -170,8 +167,71 @@ class App extends React.Component{
     return code;
   }
 
-  handleShow(){this.setState({show: !this.state.show});}
-  render() {
+  function DayFormOptions(month, year){
+    let tempCode = [];
+    for(let i = 1; i <= daysInMonth(month, year); i++){
+      tempCode.push(<option value={i}>{i}</option>);
+    }
+    return tempCode;
+  }
+
+  function MonthFormOptions(){
+    let tempCode = [];
+    for(let i = 1; i <= 12; i++){
+      tempCode.push(<option value={i}>{i}</option>);
+    }
+    return tempCode;
+  }
+
+  function YearFormOptions(){
+    let tempCode = [];
+    let date =  new Date().getFullYear();
+    for(let i = 0; i < 10; i++){
+      tempCode.push(<option value={date+i}>{date+i}</option>);
+    }
+    return tempCode;
+  }
+
+  function addBreak(startYear, startMonth, startDay, endYear, endMonth, endDay){
+    let temp = [];
+    let temp2 = []
+    temp.push(startYear);
+    temp.push(startMonth);
+    temp.push(startDay);
+    temp2.push(temp);
+    temp = []
+    temp.push(endYear);
+    temp.push(endMonth);
+    temp.push(endDay);
+    temp2.push(temp);
+    breaks.push(temp2); 
+  }
+  function App() {
+    let date =  new Date().getFullYear();
+    let startYear = date;
+    let startMonth = 1;
+    let startDay = 1;
+    let endYear = date;
+    let endMonth = 1;
+    let endDay = 1;
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+    
+    const [value,setValue]=useState('');
+    const handleSelect=(e)=>{
+      setValue(e)
+    }
+    const setStartYear=()=>{handleSelect(); startYear = value}
+    const setStartMonth=()=>{handleSelect(); startMonth = value}
+    const setStartDay=()=>{handleSelect(); startDay = value}
+
+    const setEndYear=()=>{handleSelect(); endYear = value}
+    const setEndMonth=()=>{handleSelect(); endMonth = value}
+    const setEndDay=()=>{handleSelect(); endDay = value}
+
+    const saveBreak=()=>{handleClose(); addBreak(startYear, startMonth, startDay, endYear, endMonth, endDay)}
     return (
       <div className="App">
         <Navbar expand="lg" bg="dark" variant="dark">
@@ -179,26 +239,94 @@ class App extends React.Component{
             <Navbar.Brand href="#home">Calendar App</Navbar.Brand>
             <Nav className="me-auto">
               <Nav.Item>
-                <Button variant = "primary" onClick={this.handleShow()}>
-                  Settings
+                <Button variant = "primary" onClick={handleShow}>
+                  Add Break
                 </Button>
               </Nav.Item>
             </Nav>
           </Container>
         </Navbar>
         <Container fluid>
-          {this.Years()}
+          {Years()}
         </Container>
 
-        <Modal show={this.state.show}>
-          <Button variant="secondary" onClick={this.handleShow()}>
-            Close
-          </Button>
+        <Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add Break</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <h4>Start: </h4>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Year
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setStartYear}>
+                {YearFormOptions()}
+              </Form.Select>
+            </InputGroup>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Month
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setStartMonth}>
+                {MonthFormOptions()}
+              </Form.Select>
+            </InputGroup>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Day
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setStartDay}>
+                {DayFormOptions(startYear, startMonth)}
+              </Form.Select>
+            </InputGroup>
+
+            <h4>End: </h4>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Year
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setEndYear}>
+                {YearFormOptions()}
+              </Form.Select>
+            </InputGroup>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Month
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setEndMonth}>
+                {MonthFormOptions()}
+              </Form.Select>
+            </InputGroup>
+
+            <InputGroup className="mb-3">
+              <InputGroup.Text id="basic-addon1">
+                Day
+              </InputGroup.Text>
+              <Form.Select aria-label="Default select example" onChange={setEndDay}>
+                {DayFormOptions(endYear, endMonth)}
+              </Form.Select>
+            </InputGroup>
+            
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={saveBreak}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
       </Modal>
       </div>
     );
   }
-}
+
 
 
 export default App;
